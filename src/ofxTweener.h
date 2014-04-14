@@ -15,6 +15,19 @@
 #define TWEENMODE_OVERRIDE 0x01
 #define TWEENMODE_SEQUENCE 0x02
 
+class TweenEvent : public ofEventArgs {
+public:
+    TweenEvent(float * value) {
+        _value = value;
+    }
+    virtual ~TweenEvent() {}
+    
+    float * getValue() { return _value; }
+private:
+    float * _value;
+};
+
+
 class Tween {
 public:
 	typedef float(ofxTransitions::* easeFunction)(float,float,float,float);
@@ -22,6 +35,8 @@ public:
 	float _from, _to, _duration,_by, _useBezier;
 	easeFunction _easeFunction;
 	Poco::Timestamp _timestamp;
+    
+    ofEvent<TweenEvent> ON_COMPLETE;
 };
 
 
@@ -31,10 +46,10 @@ public:
 	
 	ofxTweener();
 	
-	void addTween(float &var, float to, float time, void (^callback)(float * arg)=NULL);
-	void addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), void (^callback)(float * arg)=NULL);
-	void addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay, void (^callback)(float * arg)=NULL);
-	void addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay, float bezierPoint, void (^callback)(float * arg)=NULL);
+	Tween * addTween(float &var, float to, float time);
+	Tween * addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float));
+	Tween * addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay);
+	Tween * addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay, float bezierPoint);
     
 	
 	void removeTween(float &var);	
@@ -50,10 +65,9 @@ private:
 	float				_scale;
 	ofxTransitions		a;
 	bool				_override;
-	void				addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay, float bezierPoint, bool useBezier, void (^callback)(float * arg)=NULL);
+	Tween * 			addTween(float &var, float to, float time, float (ofxTransitions::*ease) (float,float,float,float), float delay, float bezierPoint, bool useBezier);
 	float				bezier(float b, float e, float t, float p);
-	vector<Tween>		tweens;
-    std::map<float *, void (^)(float * arg)>   callbacks;
+	vector<Tween *>		tweens;
     
 };
 
